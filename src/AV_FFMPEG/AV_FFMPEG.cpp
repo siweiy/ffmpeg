@@ -59,7 +59,7 @@ int AV_FFMPEG::Open(const char *rtsp_url, bool rtsp)
 
     if (avformat_open_input(&m_pFormatCtx, rtsp_url, NULL, &options) != 0)
     {
-        av_log(NULL, AV_LOG_INFO, "[ %s : %d ]avformat_open_input rtsp error\n", __func__, __LINE__);
+        av_log(NULL, AV_LOG_INFO, "[ %s : %d ]avformat_open_input rtsp or file error\n", __func__, __LINE__);
         return -1;
     }
 

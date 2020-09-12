@@ -121,7 +121,7 @@ int decoder_test(int argc, const char *argv[])
         if (av_ffmpeg->Open(argv[1], false) < 0)
             throw - 1;
 
-        //  printf("all time = %ld\n", av_ffmpeg->durationSec());
+        printf("all time = %0.2f\n", av_ffmpeg->durationSec());
 
         video_index = av_ffmpeg->GetVideoIndex();
         audio_index = av_ffmpeg->GetAudioIndex();
@@ -154,7 +154,7 @@ int decoder_test(int argc, const char *argv[])
                 break;
             }
 
-            // printf("time = %ld\n", av_ffmpeg->playPosition());
+            printf("time = %.2f\n", av_ffmpeg->playPosition());
 
             if (index == video_index)
             {
@@ -165,7 +165,6 @@ int decoder_test(int argc, const char *argv[])
                     av_ffmpeg->freePacket();
                     continue;
                 }
-                printf("视频\n");
 
                 uint8_t *yuv420 = av_FrameConvert->transform(frame);
                 if (yuv420)
@@ -173,7 +172,6 @@ int decoder_test(int argc, const char *argv[])
                     fwrite(yuv420, av_FrameConvert->getBufferSize(), 1, voutfile);
                     fflush(voutfile);
                 }
-
             }
             else if (index == audio_index)
             {
@@ -184,7 +182,6 @@ int decoder_test(int argc, const char *argv[])
                     av_ffmpeg->freePacket();
                     continue;
                 }
-                printf("音频\n");
             }
             else
             {

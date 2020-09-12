@@ -22,11 +22,25 @@ public:
     AV_FFMPEG();
     ~AV_FFMPEG();
 
-    /*
-        open (video file、rtsp or dev)
+    /*  Open (video file、rtsp)
+
+        @param rtsp_url： addr or file
+        @param rtsp: is rtsp?，if not, please input false
     */
     int Open(const char *rtsp_url, bool rtsp=true);
+
+    /*  Open device
+
+        @param dev : device name
+        @param video_fmt: device format,ep:v4l2
+    */
     int Open(const char *dev, const char *video_fmt);
+
+    /*  Close video stream
+
+        @param dev : device name
+        @param video_fmt: device format,ep:v4l2
+    */
     void Close();
 
     /*  Get video frame data in packet
@@ -40,7 +54,15 @@ public:
         data_type  : video 、audio or text
     */
     int GetPacketData(AV_PACKET_DATA *pkt);
+
+    /*
+        Don't do processing, return all streams
+    */
     AVPacket* GetPacketData();
+
+    /*
+        @param index: current stream index 
+    */
     AVPacket* GetPacketData(int &index);
 
     /*
@@ -49,9 +71,11 @@ public:
     void freePacket();
 
     AVFormatContext* GetAVFormatContext();
+
     int GetVideoIndex();
     int GetAudioIndex();
     int GetSubtitleIndex();
+
     double fps();
     double durationSec();
     double playPosition();

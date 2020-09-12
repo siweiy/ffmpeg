@@ -22,7 +22,7 @@ FLAGS = -O2 -Wall
 all:$(TARGET)
 $(TARGET):$(CPP_OBJ)
 	$(CXX) $^ -o $@ $(LIB_PATH) $(LIB_CXX) $(FLAGS)
-	@rm $(CPP_OBJ) -f
+	# @rm $(CPP_OBJ) -f
 
 %.o:%.cpp
 	$(CXX) -c $< -o $@ $(INC_CXX)
