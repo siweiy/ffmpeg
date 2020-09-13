@@ -1,5 +1,13 @@
 {
 	"files.associations": {
-		"optional": "cpp"
+		"optional": "cpp",
+		"iostream": "cpp",
+		"ostream": "cpp",
+		"*.tcc": "cpp",
+		"fstream": "cpp",
+		"algorithm": "cpp",
+		"array": "cpp",
+		"string": "cpp",
+		"string_view": "cpp"
 	}
 }

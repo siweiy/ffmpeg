@@ -32,7 +32,7 @@ int AV_FFMPEG::AVMemberInit()
         return -2;
     }
 
-    m_pFormatCtx->probesize = 10000000; // 设置大小，防止内存不够出错
+    // m_pFormatCtx->probesize = 10000000; // 设置大小，防止内存不够出错
 }
 
 AV_FFMPEG::~AV_FFMPEG()
@@ -57,7 +57,7 @@ int AV_FFMPEG::Open(const char *rtsp_url, bool rtsp)
         av_dict_set(&options, "fflags", "nobuffer", 0);
     }
 
-    if (avformat_open_input(&m_pFormatCtx, rtsp_url, NULL, &options) != 0)
+    if (avformat_open_input(&m_pFormatCtx, rtsp_url, NULL, &options) < 0)
     {
         av_log(NULL, AV_LOG_INFO, "[ %s : %d ]avformat_open_input rtsp or file error\n", __func__, __LINE__);
         return -1;
@@ -77,10 +77,9 @@ int AV_FFMPEG::Open(const char *dev, const char *video_fmt)
     AVMemberInit();
 
     AVDictionary *options = NULL;
-
     AVInputFormat *ifmt = av_find_input_format(video_fmt);
 
-    if (avformat_open_input(&m_pFormatCtx, dev, ifmt, &options) != 0)
+    if (avformat_open_input(&m_pFormatCtx, dev, ifmt, &options) < 0)
     {
         av_log(NULL, AV_LOG_INFO, "[ %s : %d ]avformat_open_input dev error\n", __func__, __LINE__);
         return -1;
@@ -169,7 +168,7 @@ void AV_FFMPEG::Close()
     return;
 }
 
-int AV_FFMPEG::GetPacketData(AV_PACKET_DATA *pkt)
+int AV_FFMPEG::PacketData(AV_PACKET_DATA *pkt)
 {
     if (av_read_frame(m_pFormatCtx, m_packet) >= 0)
     {
@@ -201,7 +200,7 @@ int AV_FFMPEG::GetPacketData(AV_PACKET_DATA *pkt)
     return -1;
 }
 
-AVPacket *AV_FFMPEG::GetPacketData()
+AVPacket *AV_FFMPEG::PacketData()
 {
     if (av_read_frame(m_pFormatCtx, m_packet) >= 0)
     {
@@ -213,7 +212,7 @@ AVPacket *AV_FFMPEG::GetPacketData()
     return NULL;
 }
 
-AVPacket *AV_FFMPEG::GetPacketData(int &index)
+AVPacket *AV_FFMPEG::PacketData(int &index)
 {
     if (av_read_frame(m_pFormatCtx, m_packet) >= 0)
     {
@@ -251,22 +250,50 @@ void AV_FFMPEG::freePacket()
         av_packet_unref(m_packet);
 }
 
-AVFormatContext *AV_FFMPEG::GetAVFormatContext()
+AVFormatContext *AV_FFMPEG::AVFormatCtx()
 {
     return m_pFormatCtx;
 }
 
-int AV_FFMPEG::GetVideoIndex()
+unsigned int AV_FFMPEG::NbStream()
+{
+    if (m_pFormatCtx)
+        return m_pFormatCtx->nb_streams;
+    return -1;
+}
+
+int AV_FFMPEG::VideoPixelFormat()
+{
+    if (m_pFormatCtx)
+        return m_pFormatCtx->streams[m_videoIndex]->codecpar->format;
+    return AV_PIX_FMT_NONE;
+}
+
+int AV_FFMPEG::VideoWidth()
+{
+    if (m_pFormatCtx)
+        return m_pFormatCtx->streams[m_videoIndex]->codecpar->width;
+    return -1;
+}
+
+int AV_FFMPEG::VideoHeight()
+{
+    if (m_pFormatCtx)
+        return m_pFormatCtx->streams[m_videoIndex]->codecpar->height;
+    return -1;
+}
+
+int AV_FFMPEG::VideoIndex()
 {
     return m_videoIndex;
 }
 
-int AV_FFMPEG::GetAudioIndex()
+int AV_FFMPEG::AudioIndex()
 {
     return m_audioIndex;
 }
 
-int AV_FFMPEG::GetSubtitleIndex()
+int AV_FFMPEG::SubtitleIndex()
 {
     return m_subtitleIndex;
 }

@@ -28,12 +28,12 @@ bool AV_FrameConvert::Init(enum AVPixelFormat in_fmt, enum AVPixelFormat out_fmt
     }
 
     // 将解码后的YUV数据转换成xxx, 得到转换格式上下文
-    m_imgConvertCtx = sws_getContext(m_width,      // 输入源宽
-                                     m_height,     // 输入源高
+    m_imgConvertCtx = sws_getContext(m_width,       // 输入源宽
+                                     m_height,      // 输入源高
                                      in_fmt,        // 输入源格式
-                                     m_width,      // 输出源宽
-                                     m_height,     // 输出源高
-                                     out_fmt,       // 输出为RGB32格式数据
+                                     m_width,       // 输出源宽
+                                     m_height,      // 输出源高
+                                     out_fmt,       // 输出格式数据
                                      sws_algorithn, // 使用算法
                                      NULL,          // 输入源过滤器
                                      NULL,          // 输出源过滤器
@@ -74,24 +74,34 @@ bool AV_FrameConvert::Init(enum AVPixelFormat in_fmt, enum AVPixelFormat out_fmt
 
 #endif
 
+#ifdef DEBUG
+    printf("v:width = %d, v:height=%d\n", m_width, m_height);
+#endif
+
     return true;
 }
 
-bool AV_FrameConvert::Open(enum AVPixelFormat out_fmt, int sws_algorithn)
+bool AV_FrameConvert::Open(enum AVPixelFormat out_fmt, int sws_algorithn, AVCodecContext *av_codecCtx)
 {
-    if (!m_pCodecCtx)
+    if (av_codecCtx)
+        m_pCodecCtx = av_codecCtx;
+    else
     {
         av_log(NULL, AV_LOG_INFO, "[ %s : %d ]Open error, m_pCodecCtx is null.\n", __func__, __LINE__);
         return false;
     }
+
     m_width = m_pCodecCtx->width;
     m_height = m_pCodecCtx->height;
 
     return Init(m_pCodecCtx->pix_fmt, out_fmt, sws_algorithn);
 }
 
-bool AV_FrameConvert::Open(enum AVPixelFormat in_fmt, enum AVPixelFormat out_fmt, int sws_algorithn)
+bool AV_FrameConvert::Open(enum AVPixelFormat in_fmt, enum AVPixelFormat out_fmt, int sws_algorithn, AVCodecContext *av_codecCtx)
 {
+    if (av_codecCtx)
+        m_pCodecCtx = av_codecCtx;
+
     if (m_width < 0 || m_height < 0)
     {
         av_log(NULL, AV_LOG_INFO, "[ %s : %d ] width or height is unknow \n", __func__, __LINE__);
@@ -101,10 +111,13 @@ bool AV_FrameConvert::Open(enum AVPixelFormat in_fmt, enum AVPixelFormat out_fmt
     return Init(in_fmt, out_fmt, sws_algorithn);
 }
 
-bool AV_FrameConvert::Open(int in_width, int in_height, enum AVPixelFormat in_fmt, enum AVPixelFormat out_fmt, int sws_algorithn)
+bool AV_FrameConvert::Open(int in_width, int in_height, enum AVPixelFormat in_fmt, enum AVPixelFormat out_fmt, int sws_algorithn, AVCodecContext *av_codecCtx)
 {
     m_width = in_width;
     m_height = in_height;
+
+    if (av_codecCtx)
+        m_pCodecCtx = av_codecCtx;
 
     return Init(in_fmt, out_fmt, sws_algorithn);
 }
@@ -122,7 +135,7 @@ uint8_t *AV_FrameConvert::transform(AVFrame *pFrame)
     return m_outBuffer;
 }
 
-int AV_FrameConvert::getBufferSize()
+int AV_FrameConvert::BufferSize()
 {
     return m_outBufferSize;
 }

@@ -23,44 +23,53 @@ public:
     AV_FrameConvert(AVCodecContext *codec_ctx);
     ~AV_FrameConvert();
 
-    /*
+    /** 
+     *  @brief
         @param out_fmt: convertion format
         @param sws_algorithn: convertion algorithn
+        @param av_codec: option
     */
-    bool Open(enum AVPixelFormat out_fmt, int sws_algorithn);
+    bool Open(enum AVPixelFormat out_fmt, int sws_algorithn, AVCodecContext *av_codec=NULL);
 
-    /*
+    /** 
+     *  @brief
         @param in_fmt   : input format
         @param out_fmt  : output format
         @param sws_algorithn: convertion algorithn
+        @param av_codec: option
     */
-    bool Open(enum AVPixelFormat in_fmt, enum AVPixelFormat out_fmt, int sws_algorithn);
+    bool Open(enum AVPixelFormat in_fmt, enum AVPixelFormat out_fmt, int sws_algorithn, AVCodecContext *av_codec=NULL);
 
-    /*
-        @param int_width: input width
-        @param in_height: input height
-        @param int_fmt  : input format
-        @param out_fmt  : output format
-        @param sws_algorithn: convertion algorithn
+    /** 
+     *  @brief
+     *  @param int_width: input width
+     *  @param in_height: input height
+     *  @param int_fmt  : input format
+     *  @param out_fmt  : output format
+     *  @param sws_algorithn: convertion algorithn
+     *  @param av_codec: option
     */
-    bool Open(int in_width, int in_height, enum AVPixelFormat in_fmt, enum AVPixelFormat out_fmt, int sws_algorithn);
-    
+    bool Open(int in_width, int in_height, enum AVPixelFormat in_fmt, enum AVPixelFormat out_fmt, int sws_algorithn, AVCodecContext *av_codec=NULL);
+
     void Close();
 
-    /*  Convert data
-        @param pFrame: Source image data
+    /** 
+     *  @brief Convert data
+     *  @param pFrame: Source image data
     */
     uint8_t *transform(AVFrame *pFrame);
 
-    int getBufferSize();
+    int BufferSize();
 
     void setCodecContext(AVCodecContext *pCodecCtx);
 
 private:
-    /*
-        @param int_fmt  : input format
-        @param out_fmt  : output format
-        @param sws_algorithn: convertion algorithn
+
+    /**
+    *  @brief
+    * @param int_fmt  : input format
+    * @param out_fmt  : output format
+    * @param sws_algorithn: convertion algorithn
     */
     bool Init(enum AVPixelFormat in_fmt, enum AVPixelFormat out_fmt, int sws_algorithn);
 

@@ -71,9 +71,11 @@ void AV_Vdec::setFmtCtxAndIndex(AVFormatContext *fmt_ctx, int streamIndex)
     m_streamIndex = streamIndex;
 }
 
-int AV_Vdec::Open()
+int AV_Vdec::Open(AVFormatContext *fmt_ctx, int streamIndex)
 {
     int ret = 0;
+
+    setFmtCtxAndIndex(fmt_ctx, streamIndex);
 
     if (!m_pFormatCtx)
         return -1;
@@ -88,6 +90,7 @@ int AV_Vdec::Open()
         av_log(NULL, AV_LOG_INFO, "[ %s : %d ]avcodec_open2 error\n", __func__, __LINE__);
         return -2;
     }
+    
     return 0;
 }
 
@@ -177,7 +180,7 @@ __EXIT:
     return NULL;
 }
 
-AVCodecContext *AV_Vdec::getAVCodecContext()
+AVCodecContext *AV_Vdec::AVCodecCtx()
 {
     if (m_pCodecCtx)
         return m_pCodecCtx;

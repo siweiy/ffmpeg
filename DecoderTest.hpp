@@ -1,10 +1,13 @@
 #pragma once
 
 #include <unistd.h>
+#include <iostream>
 #include "AV_FFMPEG/AV_FFMPEG.h"
 #include "AV_Vdec/AV_Vdec.h"
 #include "AV_MyFmtConver/AV_ImgFmtConver.h"
 #include "AV_FrameConvert/AV_FrameConvert.h"
+#include "CTime.hpp"
+using namespace std;
 
 #define TWO_PROGRAM 1
 
@@ -28,7 +31,7 @@ void writePacket(AV_FFMPEG *av_ffmpeg)
         if (TWO_PROGRAM)
         {
             AVPacket *pkt;
-            pkt = av_ffmpeg->GetPacketData();
+            pkt = av_ffmpeg->PacketData();
             if (pkt == NULL)
             {
                 printf("pkt is null:1\n");
@@ -42,7 +45,7 @@ void writePacket(AV_FFMPEG *av_ffmpeg)
         else
         {
             AV_PACKET_DATA pkt;
-            if (av_ffmpeg->GetPacketData(&pkt) < 0)
+            if (av_ffmpeg->PacketData(&pkt) < 0)
             {
                 printf("pkt is null:2\n");
                 av_ffmpeg->freePacket();
@@ -109,6 +112,7 @@ int decoder_test(int argc, const char *argv[])
     int video_index;
     int audio_index;
     int subtitle_index;
+    CTimer timer;
     AVPacket *pkt = NULL;
     AVFrame *frame = NULL;
     AV_FFMPEG *av_ffmpeg = new AV_FFMPEG();
@@ -123,30 +127,28 @@ int decoder_test(int argc, const char *argv[])
 
         printf("all time = %0.2f\n", av_ffmpeg->durationSec());
 
-        video_index = av_ffmpeg->GetVideoIndex();
-        audio_index = av_ffmpeg->GetAudioIndex();
-        subtitle_index = av_ffmpeg->GetSubtitleIndex();
+        video_index = av_ffmpeg->VideoIndex();
+        audio_index = av_ffmpeg->AudioIndex();
+        subtitle_index = av_ffmpeg->SubtitleIndex();
 
         // 设置参数 -- 视频
-        av_vdec->setFmtCtxAndIndex(av_ffmpeg->GetAVFormatContext(), video_index);
-        if (av_vdec->Open() < 0)
+        if (av_vdec->Open(av_ffmpeg->AVFormatCtx(), video_index) < 0)
             throw - 3;
 
         // 设置参数 -- 音频
-        if (av_ffmpeg->GetAudioIndex() >= 0)
+        if (av_ffmpeg->AudioIndex() >= 0)
         {
-            av_adec->setFmtCtxAndIndex(av_ffmpeg->GetAVFormatContext(), audio_index);
-            if (av_adec->Open() < 0)
+            if (av_adec->Open(av_ffmpeg->AVFormatCtx(), audio_index) < 0)
                 throw - 4;
         }
 
-        AV_FrameConvert *av_FrameConvert = new AV_FrameConvert(av_vdec->getAVCodecContext());
+        AV_FrameConvert *av_FrameConvert = new AV_FrameConvert(av_vdec->AVCodecCtx());
         av_FrameConvert->Open(AV_PIX_FMT_YUV420P, SWS_BICUBIC);
         while (true)
         {
             int index;
             // 获取数据包
-            pkt = av_ffmpeg->GetPacketData(index);
+            pkt = av_ffmpeg->PacketData(index);
             if (pkt == NULL)
             {
                 printf("pkt is null:1\n");
@@ -158,7 +160,9 @@ int decoder_test(int argc, const char *argv[])
 
             if (index == video_index)
             {
-                // 视频解码
+
+                cout << timer.end() / 1000000 << endl;
+
                 frame = av_vdec->Decoder(pkt);
                 if (!frame)
                 {
@@ -166,10 +170,12 @@ int decoder_test(int argc, const char *argv[])
                     continue;
                 }
 
+                cout << timer.end() / 1000000 << endl;
+
                 uint8_t *yuv420 = av_FrameConvert->transform(frame);
                 if (yuv420)
                 {
-                    fwrite(yuv420, av_FrameConvert->getBufferSize(), 1, voutfile);
+                    fwrite(yuv420, av_FrameConvert->BufferSize(), 1, voutfile);
                     fflush(voutfile);
                 }
             }

@@ -53,28 +53,34 @@ public:
         key_frame  : Keyframes
         data_type  : video 、audio or text
     */
-    int GetPacketData(AV_PACKET_DATA *pkt);
+    int PacketData(AV_PACKET_DATA *pkt);
 
     /*
         Don't do processing, return all streams
     */
-    AVPacket* GetPacketData();
+    AVPacket* PacketData();
 
     /*
         @param index: current stream index 
     */
-    AVPacket* GetPacketData(int &index);
+    AVPacket* PacketData(int &index);
 
     /*
         Free packet memory
     */
     void freePacket();
 
-    AVFormatContext* GetAVFormatContext();
+    AVFormatContext* AVFormatCtx();
 
-    int GetVideoIndex();
-    int GetAudioIndex();
-    int GetSubtitleIndex();
+    unsigned int NbStream();
+    int VideoPixelFormat();
+
+    int VideoWidth();
+    int VideoHeight();
+
+    int VideoIndex();
+    int AudioIndex();
+    int SubtitleIndex();
 
     double fps();
     double durationSec();

@@ -22,7 +22,7 @@ public:
     AV_Vdec(AVFormatContext *fmt_ctx, int streamIndex);
     ~AV_Vdec();
 
-    int Open();
+    int Open(AVFormatContext *fmt_ctx, int streamIndex);
     int Close();
     AVFrame *Decoder(AVPacket *pkt);
     /*
@@ -31,7 +31,7 @@ public:
     AVFrame *DecoderEnd(AVPacket *pkt);
 
     void setFmtCtxAndIndex(AVFormatContext *fmt_ctx, int streamIndex);
-    AVCodecContext *getAVCodecContext();
+    AVCodecContext *AVCodecCtx();
 
 private:
     int VdecInitMember();

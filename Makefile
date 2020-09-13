@@ -18,14 +18,15 @@ LIB_CXX := -lavcodec -lavdevice -lavformat -lavutil -lavfilter \
 		   -lpostproc -lswresample -lswscale -lx264
 
 FLAGS = -O2 -Wall
+HEAD_FLAGS = -DDEBUG
 
 all:$(TARGET)
 $(TARGET):$(CPP_OBJ)
 	$(CXX) $^ -o $@ $(LIB_PATH) $(LIB_CXX) $(FLAGS)
-	# @rm $(CPP_OBJ) -f
+	@rm $(CPP_OBJ) -f
 
 %.o:%.cpp
-	$(CXX) -c $< -o $@ $(INC_CXX)
+	$(CXX) -c $< -o $@ $(INC_CXX) $(HEAD_FLAGS)
 
 .PHONY:clean
 clean:
