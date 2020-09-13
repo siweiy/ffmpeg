@@ -77,6 +77,8 @@ int AV_FFMPEG::Open(const char *dev, const char *video_fmt)
     AVMemberInit();
 
     AVDictionary *options = NULL;
+    av_dict_set(&options, "framerate", "25", 0);
+    av_dict_set(&options, "fflags", "nobuffer", 0);
     AVInputFormat *ifmt = av_find_input_format(video_fmt);
 
     if (avformat_open_input(&m_pFormatCtx, dev, ifmt, &options) < 0)

@@ -1,0 +1,14 @@
+prefix=/home/ysw/use_lib/ffmpeg-4.3.1/build
+exec_prefix=${prefix}
+libdir=/home/ysw/use_lib/ffmpeg-4.3.1/build/lib
+includedir=/home/ysw/use_lib/ffmpeg-4.3.1/build/include
+
+Name: libavcodec
+Description: FFmpeg codec library
+Version: 58.91.100
+Requires: 
+Requires.private: libswresample >= 3.7.100, libavutil >= 56.51.100
+Conflicts:
+Libs: -L${libdir}  -lavcodec 
+Libs.private: -pthread -lm -lz -L/usr/local/lib -lfdk-aac -lmp3lame -lm -ltheoraenc -ltheoradec -logg -lvorbis -lvorbisenc -lx264 -L/usr/local/lib -lx265 -lxvidcore
+Cflags: -I${includedir}

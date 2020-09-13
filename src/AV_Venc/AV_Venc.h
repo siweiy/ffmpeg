@@ -52,7 +52,7 @@ private:
      * @param[2]:create frame
      * @return
     */
-    bool OnFramePacket(int width, int height, bool frame=false);
+    bool OnFramePacket(int width, int height, bool needframe=false);
 
 private:
     AVCodecContext *m_pCodecCtx;

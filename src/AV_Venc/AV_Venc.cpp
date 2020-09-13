@@ -11,10 +11,10 @@ AV_Venc::~AV_Venc()
 bool AV_Venc::Open(int width, int height, const char *codec, bool needFrmae)
 {
 	// 找编码器
-	AVCodec *pCodec = avcodec_find_decoder_by_name(codec);
+	AVCodec *pCodec = avcodec_find_encoder_by_name(codec);
 	if (!pCodec)
 	{
-		av_log(NULL, AV_LOG_INFO, "[ %s : %d ] avcodec_find_decoder_by_name decoder error \n", __func__, __LINE__);
+		av_log(NULL, AV_LOG_INFO, "[ %s : %d ] avcodec_find_decoder_by_name decoder [%s] error \n", __func__, __LINE__, codec);
 		return false;
 	}
 
@@ -33,6 +33,9 @@ bool AV_Venc::Open(int width, int height, const char *codec, bool needFrmae)
 	// 设置分辨率
 	m_pCodecCtx->width = width;
 	m_pCodecCtx->height = height;
+	m_pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
+
+	printf("w:%d, h:%d\n", m_pCodecCtx->width, m_pCodecCtx->height);
 
 	// GOP
 	// 如果I帧丢失，会出现花屏或者卡段现象
@@ -52,13 +55,13 @@ bool AV_Venc::Open(int width, int height, const char *codec, bool needFrmae)
 	m_pCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
 
 	// 设置码率
-	m_pCodecCtx->bit_rate = 600000; // 码流大小600kbps
+	m_pCodecCtx->bit_rate = 600000; // 码流大小600kbps,大小影响清晰度
 
 	// 设置帧数
 	m_pCodecCtx->time_base = (AVRational){1, 25}; // 帧与帧之间的间隔time_base
 	m_pCodecCtx->framerate = (AVRational){25, 1}; // 帧率、每秒25帧
 
-	if (avcodec_open2(m_pCodecCtx, pCodec, NULL))
+	if (avcodec_open2(m_pCodecCtx, pCodec, NULL) != 0)
 	{
 		av_log(NULL, AV_LOG_INFO, "[ %s : %d ] avcodec_open2 error \n", __func__, __LINE__);
 		return false;
@@ -85,6 +88,8 @@ AVPacket *AV_Venc::Encoder(AVFrame *pFrame)
 		av_log(NULL, AV_LOG_INFO, "[ %s : %d ] avcodec_send_frame error \n", __func__, __LINE__);
 		return NULL;
 	}
+	
+	m_pFrame->pts++;
 
 	if (avcodec_receive_packet(m_pCodecCtx, m_packet) < 0)
 	{
@@ -97,17 +102,36 @@ AVPacket *AV_Venc::Encoder(AVFrame *pFrame)
 
 AVPacket *AV_Venc::Encoder(AVPacket *pkt)
 {
+	int ret = 0;
+
 	// 将 pkt 转为 m_pFrame YUV420P 数据
-	Yuyv422Pkt2Yuv420P(pkt);
+	m_pFrame = Yuyv422Pkt2Yuv420P(pkt);
 
 	// 编码
-	if (avcodec_send_frame(m_pCodecCtx, m_pFrame) < 0)
+	if ((ret = avcodec_send_frame(m_pCodecCtx, m_pFrame)) < 0)
 	{
-		av_log(NULL, AV_LOG_INFO, "[ %s : %d ] avcodec_send_frame error \n", __func__, __LINE__);
+		char errors[1024] = {0};
+		av_strerror(ret, errors, 1024);
+		av_log(NULL, AV_LOG_INFO, "[ %s : %d ] %s \n", __func__, __LINE__, errors);
 		return NULL;
 	}
 
-	if (avcodec_receive_packet(m_pCodecCtx, m_packet) < 0)
+	// 不增加会花屏
+	m_pFrame->pts++;
+
+	ret = avcodec_receive_packet(m_pCodecCtx, m_packet);
+	// 编码数据不足时：EAGAIN、到数据尾部：AVERROR_EOF
+	if (ret == AVERROR(EAGAIN))
+	{
+		av_log(NULL, AV_LOG_INFO, "[ %s : %d ] AVERROR(EAGAIN) waiting ...\n", __func__, __LINE__);
+		return NULL;
+	}
+	else if (ret == AVERROR_EOF)
+	{
+		av_log(NULL, AV_LOG_INFO, "[ %s : %d ] AVERROR_EOF... finsh ... \n", __func__, __LINE__);
+		return NULL;
+	}
+	else if (ret < 0)
 	{
 		av_log(NULL, AV_LOG_INFO, "[ %s : %d ] avcodec_receive_packet error \n", __func__, __LINE__);
 		return NULL;
@@ -116,9 +140,9 @@ AVPacket *AV_Venc::Encoder(AVPacket *pkt)
 	return m_packet;
 }
 
-bool AV_Venc::OnFramePacket(int width, int height, bool frame)
+bool AV_Venc::OnFramePacket(int width, int height, bool needframe)
 {
-	if (frame)
+	if (needframe)
 	{
 		m_pFrame = av_frame_alloc();
 		if (!m_pFrame)
@@ -126,7 +150,8 @@ bool AV_Venc::OnFramePacket(int width, int height, bool frame)
 			av_log(NULL, AV_LOG_INFO, "[ %s : %d ] av_frame_alloc error \n", __func__, __LINE__);
 			return false;
 		}
-
+		
+		m_pFrame->pts = 0;
 		m_pFrame->width = width;
 		m_pFrame->height = height;
 		m_pFrame->format = AV_PIX_FMT_YUV420P;
@@ -157,7 +182,7 @@ __ERROR:
 
 AVFrame *AV_Venc::Yuyv422Pkt2Yuv420P(AVPacket *pkt)
 {
-	// YUYV422 --------- YUYV YUVY YUYV YUYV ----- 
+	// YUYV422 --------- YUYV YUVY YUYV YUYV -----
 	for (int i = 0; i < 307200 / 4; i++)
 	{
 		m_pFrame->data[0][i * 4] = pkt->data[i * 8];		 // Y
