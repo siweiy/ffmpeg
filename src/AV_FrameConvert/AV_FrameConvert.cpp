@@ -85,7 +85,7 @@ bool AV_FrameConvert::Open(enum AVPixelFormat out_fmt, int sws_algorithn, AVCode
 {
     if (av_codecCtx)
         m_pCodecCtx = av_codecCtx;
-    else
+    else if (!m_pCodecCtx)
     {
         av_log(NULL, AV_LOG_INFO, "[ %s : %d ]Open error, m_pCodecCtx is null.\n", __func__, __LINE__);
         return false;

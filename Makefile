@@ -1,4 +1,5 @@
 TARGET = target 
+TOOL = Tool/FlvTool
 
 $(warning "**************************************************************")
 $(warning "                    compiler：g++ , ubuntu                    ")
@@ -6,21 +7,26 @@ $(warning "**************************************************************")
 CC = gcc
 CXX = g++
 
-CPP_SRC := $(wildcard *.cpp src/*.cpp src/*/*.cpp)
+CPP_SRC := $(wildcard *.cpp src/*.cpp src/*/*.cpp Sample/*.cpp)
 CPP_OBJ := $(patsubst %.cpp, %.o, $(CPP_SRC))
 
-INC_CXX := -I$$(pwd)/ThirdParty/ffmpeg-4.3.1/include \
+INC_CXX := -I$$(pwd)/ThirdParty/ffmpeg/include \
+		   -I$$(pwd)/ThirdParty/librtmp/include \
+		   -I$$(pwd)/Sample \
 		   -I$$(pwd)/src
 
-LIB_PATH := -L$$(pwd)/ThirdParty/ffmpeg-4.3.1/lib \
-			-L$$(pwd)/ThirdParty/libx264/lib  \
-			-L$$(pwd)/ThirdParty/libx265/lib
+# LIB_PATH := -L$$(pwd)/ThirdParty/ffmpeg/lib \
+# 			-L$$(pwd)/ThirdParty/librtmp/lib \
+# 			-L$$(pwd)/ThirdParty/x264/lib
+
+LIB_PATH := -L$$(pwd)/ThirdParty/librtmp/lib
+
 
 LIB_CXX := -lavcodec -lavdevice -lavformat -lavutil -lavfilter \
-		   -lpostproc -lswresample -lswscale -lx264 -lx265
+		   -lpostproc -lswresample -lswscale -lrtmp
 
 FLAGS = -O2 -Wall
-HEAD_FLAGS = -DDEBUG
+HEAD_FLAGS = -std=c++11 #-DDEBUG
 
 all:$(TARGET)
 $(TARGET):$(CPP_OBJ)
@@ -32,4 +38,4 @@ $(TARGET):$(CPP_OBJ)
 
 .PHONY:clean
 clean:
-	-rm  -f $(CPP_OBJ) $(TARGET)
+	-rm  -f $(CPP_OBJ) $(TARGET) $(TOOL)

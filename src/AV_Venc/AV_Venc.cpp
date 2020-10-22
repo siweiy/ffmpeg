@@ -55,7 +55,7 @@ bool AV_Venc::Open(int width, int height, const char *codec, bool needFrmae)
 	m_pCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
 
 	// 设置码率
-	m_pCodecCtx->bit_rate = 600000; // 码流大小600kbps,大小影响清晰度
+	m_pCodecCtx->bit_rate = 800000; // 码流大小600kbps,大小影响清晰度
 
 	// 设置帧数
 	m_pCodecCtx->time_base = (AVRational){1, 25}; // 帧与帧之间的间隔time_base
@@ -66,6 +66,8 @@ bool AV_Venc::Open(int width, int height, const char *codec, bool needFrmae)
 		av_log(NULL, AV_LOG_INFO, "[ %s : %d ] avcodec_open2 error \n", __func__, __LINE__);
 		return false;
 	}
+	
+	m_AreaSize = width * height;
 
 	return OnFramePacket(width, height, needFrmae);
 }
@@ -105,7 +107,7 @@ AVPacket *AV_Venc::Encoder(AVPacket *pkt)
 	int ret = 0;
 
 	// 将 pkt 转为 m_pFrame YUV420P 数据
-	m_pFrame = Yuyv422Pkt2Yuv420P(pkt);
+	m_pFrame = Yuyv422Pkt2Yuv420P(pkt, m_AreaSize);
 
 	// 编码
 	if ((ret = avcodec_send_frame(m_pCodecCtx, m_pFrame)) < 0)
@@ -180,10 +182,10 @@ __ERROR:
 	return false;
 }
 
-AVFrame *AV_Venc::Yuyv422Pkt2Yuv420P(AVPacket *pkt)
+AVFrame *AV_Venc::Yuyv422Pkt2Yuv420P(AVPacket *pkt, int areaSize)
 {
 	// YUYV422 --------- YUYV YUVY YUYV YUYV -----
-	for (int i = 0; i < 307200 / 4; i++)
+	for (int i = 0; i < areaSize / 4; i++)
 	{
 		m_pFrame->data[0][i * 4] = pkt->data[i * 8];		 // Y
 		m_pFrame->data[1][i] = pkt->data[i * 8 + 1];		 // U

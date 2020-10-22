@@ -22,17 +22,19 @@ public:
     AV_FFMPEG();
     ~AV_FFMPEG();
 
-    /*  Open (video file、rtsp)
-
-        @param rtsp_url： addr or file
-        @param rtsp: is rtsp?，if not, please input false
+    /**
+     * @brief Open (video file、rtsp)
+     * @param rtsp_url： addr or file
+     * @param rtsp: is rtsp?，if not, please input false
+     * @return: 0 success
     */
-    int Open(const char *rtsp_url, bool rtsp=true);
+    int Open(const char *rtsp_url, bool rtsp = true);
 
-    /*  Open device
-
-        @param dev : device name
-        @param video_fmt: device format,ep:v4l2
+    /**
+     * @brief Open
+     * @param dev : device name
+     * @param video_fmt: device format,ep:v4l2
+     * @return: 0 success
     */
     int Open(const char *dev, const char *video_fmt);
 
@@ -43,34 +45,34 @@ public:
     */
     void Close();
 
-    /*  Get video frame data in packet
-
-        @param
-        AV_PACKET_DATA-->
-        packet_data: video frame data
-        packet_size: video frame size
-        packet_pts : AVStream->time_base
-        key_frame  : Keyframes
-        data_type  : video 、audio or text
+    /**
+     * @brief  Get video frame data in packet
+     * @param
+     *   AV_PACKET_DATA-->
+     *   packet_data: video frame data
+     *   packet_size: video frame size
+     *   packet_pts : AVStream->time_base
+     *   key_frame  : Keyframes
+     *   data_type  : video 、audio or text
     */
     int PacketData(AV_PACKET_DATA *pkt);
 
     /*
         Don't do processing, return all streams
     */
-    AVPacket* PacketData();
+    AVPacket *PacketData();
 
     /*
         @param index: current stream index 
     */
-    AVPacket* PacketData(int &index);
+    AVPacket *PacketData(int &index);
 
-    /*
-        Free packet memory
+    /**
+     * @brief Free packet memory
     */
     void freePacket();
 
-    AVFormatContext* AVFormatCtx();
+    AVFormatContext *AVFormatCtx();
 
     unsigned int NbStream();
     int VideoPixelFormat();

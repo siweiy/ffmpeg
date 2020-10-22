@@ -42,7 +42,7 @@ public:
     */
     AVPacket* Encoder(AVPacket *pkt);
 
-    AVFrame* Yuyv422Pkt2Yuv420P(AVPacket *pkt);
+    AVFrame* Yuyv422Pkt2Yuv420P(AVPacket *pkt, int areaSize);
 
 private:
     /**
@@ -58,4 +58,5 @@ private:
     AVCodecContext *m_pCodecCtx;
     AVFrame* m_pFrame;
     AVPacket* m_packet;
+    int m_AreaSize;
 };

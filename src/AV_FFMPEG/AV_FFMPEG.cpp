@@ -54,7 +54,7 @@ int AV_FFMPEG::Open(const char *rtsp_url, bool rtsp)
         av_dict_set(&options, "stimeout", "5000000", 0);
         av_dict_set(&options, "max_delay", "500000", 0);
         // av_dict_set(&options, "framerate", "25", 0);
-        av_dict_set(&options, "fflags", "nobuffer", 0);
+        av_dict_set(&options, "flags", "nobuffer", 0);
     }
 
     if (avformat_open_input(&m_pFormatCtx, rtsp_url, NULL, &options) < 0)
@@ -77,8 +77,8 @@ int AV_FFMPEG::Open(const char *dev, const char *video_fmt)
     AVMemberInit();
 
     AVDictionary *options = NULL;
-    av_dict_set(&options, "framerate", "25", 0);
-    av_dict_set(&options, "fflags", "nobuffer", 0);
+    // av_dict_set(&options, "framerate", "25", 0);
+    // av_dict_set(&options, "fflags", "nobuffer", 0);
     AVInputFormat *ifmt = av_find_input_format(video_fmt);
 
     if (avformat_open_input(&m_pFormatCtx, dev, ifmt, &options) < 0)

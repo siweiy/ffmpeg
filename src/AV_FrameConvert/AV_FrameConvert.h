@@ -66,7 +66,7 @@ public:
 private:
 
     /**
-    *  @brief
+    * @brief
     * @param int_fmt  : input format
     * @param out_fmt  : output format
     * @param sws_algorithn: convertion algorithn
